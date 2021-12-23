@@ -1,43 +1,39 @@
 <template>
-  <ApolloQuery
-    :query="require('./../apollo/queries/alerts.gql')"
-    >
+  <div class="q-ma-xl">
+    <ApolloQuery
+      :query="require('./../apollo/queries/alerts.gql')"
+      v-slot="{ result: { loading, data } }"
+      >
 
-    <template v-slot="{ result: { loading, data } }">
-        <q-list bordered separator v-if="!loading" class="q-ma-xl">
-          
-          <q-item clickable v-ripple v-for="a in data.alerts" v-bind:key="a.id">
-            <q-item-section>{{ date(a.createdAt) }} {{ a.room.name }}</q-item-section>
+      <AlertsList 
+        v-if="!loading"
+        :alerts="data.alerts"
+      />
 
-            <q-item-section side v-if="a.responded">{{ a.responded.response }}</q-item-section>
-            <q-item-section side v-else>
-              <ApolloMutation
-                :mutation="require('./../apollo/mutations/respondalert.gql')"
-                :refetchQueries="[require('./../apollo/queries/alerts.gql')]"
-                v-slot="{loading, mutate}"
-              >
+    </ApolloQuery>
 
-                <q-btn class="q-ma-sm" :disable="loading" label="Host" type="submit" color="primary" @click="mutate({variables: { alert: a.id, response: 'HOST' }})" />
-                <q-btn class="q-ma-sm" :disable="loading" label="Yes" type="submit" color="primary" @click="mutate({variables: { alert: a.id, response: 'YES' }})" />
-                <q-btn class="q-ma-sm text-grey" :disable="loading" label="No" type="submit" color="secondairy" @click="mutate({variables: { alert: a.id, response: 'NO' }})" />
+    <Actions />
 
-              </ApolloMutation>
-            </q-item-section>
-          </q-item>
-
-      </q-list>
-  </template>
-
-  </ApolloQuery>
+  </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue';
-import { useQuery } from '@vue/apollo-composable'
-import { QUERY_TOKEN, tokenVar } from '../apollo'
+import AlertsList from '../components/AlertsList.vue'
+import Actions from './../components/Actions.vue'
 
 export default defineComponent({
-  name: 'Alerts'
+  name: 'Alerts',
+  
+  components: {
+    AlertsList,
+    Actions
+  },
 
+  data() {
+    return {
+      
+    }
+  }
 })
 </script>

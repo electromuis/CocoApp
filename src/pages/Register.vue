@@ -1,21 +1,22 @@
 <template>
   <ApolloMutation
-    :mutation="require('./../apollo/mutations/login.gql')"
-    :variables="{email, password}"
+    :mutation="require('./../apollo/mutations/register.gql')"
+    :variables="{name, email, password}"
     @done="loggedIn"
     v-slot="{mutate, error}"
   >
 
     <q-page>
-      <h5 class="q-pa-sm">Login</h5>
+      <h5 class="q-pa-sm">Register</h5>
       <h5 class="q-pa-sm text-red" v-if="error">{{error}}</h5>
       
       <q-form>
+        <q-input filled class="q-ma-sm" v-model="name" type="text" label="Name" />
         <q-input filled class="q-ma-sm" v-model="email" type="email" label="Email" />
         <q-input filled class="q-ma-sm" v-model="password" type="password" label="Password" />
 
         <div class="q-ma-sm">
-          <q-btn class="q-pa-sm" label="Login" type="submit" color="primary" @click="mutate()" />
+          <q-btn class="q-pa-sm" label="Register" type="submit" color="primary" @click="mutate()" />
         </div>
         
       </q-form>
@@ -31,13 +32,13 @@ import { useQuery, writeQuery } from '@vue/apollo-composable'
 import { QUERY_TOKEN, tokenVar } from './../apollo'
 
 export default defineComponent({
-  name: 'PageLogin',
+  name: 'PageRegister',
 
   methods: {
     tokenVar,
     loggedIn(d) {
-      tokenVar(d.data.login.token)
-      localStorage.setItem('token', d.data.login.token)
+      tokenVar(d.data.register.token)
+      localStorage.setItem('token', d.data.register.token)
       $router.replace('/alerts')
     }
   },
@@ -50,6 +51,7 @@ export default defineComponent({
 
   data () {
     return {
+      name: '',
       email: '',
       password: ''
     }

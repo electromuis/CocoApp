@@ -34,6 +34,19 @@
         >
           <template v-if="data.token">
             
+            <ApolloQuery
+              :query="require('./../apollo/queries/alerts.gql')"
+              v-slot="{ result: { loading, data } }"
+              :variables="{responded: false}"
+            >
+              <q-item to="/alerts" clickable>
+                <q-item-section>
+                  <q-item-label v-if="loading">Alerts (...)</q-item-label>
+                  <q-item-label v-else>Alerts ({{ data.alerts.length }})</q-item-label>
+                </q-item-section>
+              </q-item>
+            </ApolloQuery>
+
             <q-item to="/rooms" clickable>
               <q-item-section>
                 <q-item-label>Rooms</q-item-label>
@@ -53,19 +66,6 @@
               </q-item>
             </ApolloQuery>
 
-            <ApolloQuery
-              :query="require('./../apollo/queries/alerts.gql')"
-              v-slot="{ result: { loading, data } }"
-              :variables="{responded: false}"
-            >
-              <q-item to="/alerts" clickable>
-                <q-item-section>
-                  <q-item-label v-if="loading">Alerts (...)</q-item-label>
-                  <q-item-label v-else>Alerts ({{ data.alerts.length }})</q-item-label>
-                </q-item-section>
-              </q-item>
-            </ApolloQuery>
-
           </template>
           <template v-else>
 
@@ -74,6 +74,13 @@
                 <q-item-label>Login</q-item-label>
               </q-item-section>
             </q-item>
+
+            <q-item to="/register" clickable>
+              <q-item-section>
+                <q-item-label>Register</q-item-label>
+              </q-item-section>
+            </q-item>
+
 
           </template>
 

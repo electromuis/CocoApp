@@ -4,23 +4,22 @@
     >
 
     <template v-slot="{ result: { loading, data } }">
-
-      <div class="q-pa-md" style="max-width: 350px">
-            <q-item to="/rooms/add" clickable>
-              <q-item-section>
-                <q-item-label>Add</q-item-label>
-              </q-item-section>
-            </q-item>
-
+      
+        <q-item to="/rooms/add" clickable>
+          <q-item-section>
+            <q-item-label>Add</q-item-label>
+          </q-item-section>
+        </q-item>
 
         <q-list bordered separator v-if="!loading">
           
-          <q-item clickable v-ripple v-for="r in data.rooms" v-bind:key="r.id">
+          <q-item clickable v-ripple v-for="r in data.rooms" v-bind:key="r.id" @click="$router.push({ path: `/rooms/${r.id}/details`})">
             <q-item-section>{{ r.name }}</q-item-section>
           </q-item>
 
       </q-list>
-    </div>
+
+      <Actions />
   </template>
 
   </ApolloQuery>
@@ -30,9 +29,13 @@
 import { defineComponent } from 'vue';
 import { useQuery } from '@vue/apollo-composable'
 import { QUERY_TOKEN, tokenVar } from '../apollo'
+import Actions from './../components/Actions.vue'
 
 export default defineComponent({
-  name: 'Rooms'
+  name: 'Rooms',
+  components: {
+    Actions
+  }
 
 })
 </script>

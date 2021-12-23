@@ -1,9 +1,28 @@
-
+import { literal, Op } from 'sequelize'
 
 export const Room = {
     owner(parent, {}, { models })
     {
         return models.User.findByPk(parent.ownerId);
+    },
+    users(parent, {}, { models })
+    {
+        return models.User.findAll({
+            where: {
+                [Op.or]: [
+                    { id: parent.ownerId },
+                    literal(`exists(select 1 from Invites where userId=User.id AND accepted=1 and roomId=${parent.id})`)
+                ]
+            }
+        })
+    },
+    alerts(parent, {}, { models })
+    {
+        return models.Alert.findAll({
+            where: {
+                roomId: parent.id
+            }
+        })
     }
 }
 
@@ -30,7 +49,9 @@ export const Alert = {
     responses(parent, {}, { models })
     {
         return models.Response.findAll({
-            alertId: parent.id
+            where: {
+                alertId: parent.id
+            }
         })
     },
     responded(parent, {}, { user, models })

@@ -1,0 +1,24 @@
+query GetRoom ($id: ID!) {
+    room (id: $id) {
+        id
+        name
+        owner {
+            id
+        }
+        users {
+            id
+            name
+        }
+        alerts {
+            id
+            createdAt
+            responded {
+                response
+            }
+            room {
+                id
+                name
+            }
+        }
+    }
+}

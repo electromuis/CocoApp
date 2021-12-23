@@ -7,6 +7,8 @@ type User {
     id: ID!
     name: String
     owner: User
+    users: [User]
+    alerts: [Alert]
   }
   enum AlertResponseType {
     YES,
@@ -42,8 +44,9 @@ type User {
   }
   type Query {
     hello: String
-    user(id: Int!): User
+    user(id: ID!): User
     rooms: [Room]
+    room(id: ID!): Room
     invites(accepted: AcceptedType): [Invite]
     alerts(responded: Boolean): [Alert]
   }

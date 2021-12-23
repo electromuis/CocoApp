@@ -5,20 +5,25 @@ export const hello = () =>  { return 'Hello world!'; }
 export const rooms = async (_, {}, { models, user }) =>
 {
     if(!user)
-    {
-    console.log('nop')
-    return []
-    }
-
-    //return models.Room.findAll({ownerId: user.id})
+        throw 'Not authenticated'
+    
+    
     return models.Room.findAll({
-    where: {
-        [Op.or]: [
-        {ownerId: user.id},
-        literal(`exists(select 1 from Invites where userId=${user.id} AND accepted=1 and roomId=Room.id)`)
-        ]
-    }
+        where: {
+            [Op.or]: [
+            {ownerId: user.id},
+            literal(`exists(select 1 from Invites where userId=${user.id} AND accepted=1 and roomId=Room.id)`)
+            ]
+        }
     })
+}
+
+export const room = async (_, { id }, { models, user }) =>
+{
+    //f(!user)
+    //    throw 'Not authenticated'
+
+    return models.Room.findByPk(id);
 }
  
 export const invites = async(_, { accepted }, { models, user }) => 
