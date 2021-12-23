@@ -1,0 +1,8 @@
+mutation RespondAlert($alert: ID!, $response: AlertResponseType!) {
+    alertResponse(
+        alertId: $alert,
+        response: $response
+    ) {
+        response
+    }
+}

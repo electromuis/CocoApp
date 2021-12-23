@@ -1,0 +1,7 @@
+mutation AddRoom($name: String!) {
+    addRoom(
+        name: $name
+    ) {
+        id
+    }
+}

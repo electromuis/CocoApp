@@ -1,0 +1,9 @@
+query GetInvites ($accepted: AcceptedType!) {
+    invites(accepted: $accepted) {
+        accepted
+        room {
+            id
+            name
+        }
+    }
+}

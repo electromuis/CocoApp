@@ -1,0 +1,15 @@
+query GetAlerts ($responded: Boolean) {
+    alerts(responded: $responded) {
+        id
+        createdAt
+        room {
+            name
+        }
+        responses {
+            response
+        }
+        responded {
+            response
+        }
+    }
+}

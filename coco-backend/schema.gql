@@ -1,0 +1,71 @@
+type User {
+    id: ID!
+    name: String
+    email: String
+  }
+  type Room {
+    id: ID!
+    name: String
+    owner: User
+  }
+  enum AlertResponseType {
+    YES,
+    NO,
+    HOST
+  }
+  type AlertResponse {
+    response: AlertResponseType!
+    user: User!
+  }
+  type Alert {
+    id: ID!
+    room: Room!
+    creator: User!
+    createdAt: String
+    responses: [AlertResponse]
+    responded: AlertResponse
+  }
+  enum AcceptedType {
+    ANY,
+    YES,
+    NO,
+    EMPTY
+  }
+  type Invite {
+    room: Room!
+    user: User!
+    accepted: Boolean
+  }
+  type AuthPayload {
+    token: String!
+    user: User!
+  }
+  type Query {
+    hello: String
+    user(id: Int!): User
+    rooms: [Room]
+    invites(accepted: AcceptedType): [Invite]
+    alerts(responded: Boolean): [Alert]
+  }
+  
+  type Mutation {
+    register(
+      name: String
+      email: String
+      password: String
+    ): AuthPayload!
+
+    login(
+      email: String
+      password: String
+    ): AuthPayload!
+
+    validateToken(token: String!): User!
+
+    addRoom(name: String!): Room!
+    addAlert(roomId: ID!): Alert!
+    alertResponse(alertId: ID!, response: AlertResponseType!): AlertResponse!
+
+    invite(userId: ID!, roomId: ID!): Invite!
+    inviteResponse(roomId: ID!, accepted: Boolean!): Invite!
+  }

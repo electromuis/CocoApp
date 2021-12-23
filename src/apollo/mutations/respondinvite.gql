@@ -1,0 +1,11 @@
+mutation RespondInvite($room: ID!, $accepted: Boolean!) {
+    inviteResponse(
+        roomId: $room,
+        accepted: $accepted
+    ) {
+        accepted
+        room {
+            id
+        }
+    }
+}
