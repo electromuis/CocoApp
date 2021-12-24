@@ -6,7 +6,7 @@
 
     <template v-slot="{ result: { loading, data } }">
 
-      <q-list bordered separator v-if="!loading" class="q-ma-xl">
+      <q-list separator v-if="!loading" class="q-ma-xl">
         
         <q-item clickable v-ripple v-for="i in data.invites" v-bind:key="i.room.id">
           <q-item-section>{{ i.room.name }}</q-item-section>

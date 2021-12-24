@@ -1,6 +1,10 @@
 import { createHttpLink, InMemoryCache, makeVar, gql } from '@apollo/client/core'
 import { setContext } from '@apollo/client/link/context';
 import { persistCache, LocalStorageWrapper } from 'apollo3-cache-persist';
+// New Imports
+import { split } from 'apollo-link'
+import { WebSocketLink } from 'apollo-link-ws'
+import { getMainDefinition } from 'apollo-utilities'
 
 export const tokenVar = makeVar(localStorage.getItem('token'));
 
@@ -18,8 +22,6 @@ const cache = new InMemoryCache({
   }
 });
 
-export const QUERY_TOKEN = require('./queries/token.gql');
-
 const typeDefs = gql`
   extend type Query {
     token: String!
@@ -29,6 +31,13 @@ const typeDefs = gql`
 const httpLink = createHttpLink({
   uri: 'http://coco-backend.devlocal/graphql'
 });
+
+const wsLink = new WebSocketLink({
+  uri: 'ws://localhost:4000/graphqlws',
+  options: {
+    reconnect: true,
+  },
+})
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
@@ -44,6 +53,17 @@ const authLink = setContext((_, { headers }) => {
   }
 });
 
+const link = split(
+  // split based on operation type
+  ({ query }) => {
+    const definition = getMainDefinition(query)
+    return definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+  },
+  wsLink,
+  httpLink
+)
+
 export async function getClientOptions(/* {app, router, ...} */ options) {
 
   await persistCache({
@@ -54,10 +74,14 @@ export async function getClientOptions(/* {app, router, ...} */ options) {
   return Object.assign(
     // General options.
     {
-      link: authLink.concat(httpLink),
+      link: authLink.concat(link),
       cache,
       typeDefs
     },
+
+
+
+
     // Specific Quasar mode options.
     process.env.MODE === 'spa'
       ? {

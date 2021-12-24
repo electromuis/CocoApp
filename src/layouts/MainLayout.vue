@@ -66,6 +66,12 @@
               </q-item>
             </ApolloQuery>
 
+            <q-item clickable @click="$auth.logout()">
+              <q-item-section>
+                <q-item-label>Logout</q-item-label>
+              </q-item-section>
+            </q-item>
+
           </template>
           <template v-else>
 

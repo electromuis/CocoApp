@@ -1,0 +1,9 @@
+subscription OnAlert {
+    alertSent {
+        id
+        createdAt
+        room {
+            id
+        }
+    }
+}

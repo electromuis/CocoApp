@@ -1,33 +1,73 @@
 <template>
-    <q-dialog v-model="alertpopup">
+    <q-dialog v-model="alert.open">
       <q-card>
         <q-card-section>
-          <div class="text-h6">Alert</div>
+          <div class="text-h6" v-if="!alert.room">Alert</div>
+          <div class="text-h6" v-else>Alert: {{ alert.room.name }}</div>
         </q-card-section>
 
-        <q-card-section class="q-pt-none">
-          Add an alert
-        </q-card-section>
+        
 
-        <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" v-close-popup />
-        </q-card-actions>
+          <ApolloQuery
+              :query="require('./../apollo/queries/rooms.gql')"
+              v-if="!alert.room"
+              v-slot="{ result: { loading, data } }"
+              >
+
+            <q-list dense bordered padding class="rounded-borders" v-if="!loading">
+              <q-item clickable v-ripple v-for="r in data.rooms" v-bind:key="r.id" @click="alert.room = r">
+                <q-item-section>{{ r.name }}</q-item-section>
+              </q-item>
+            </q-list>
+
+          </ApolloQuery>
+
+        
+          <ApolloMutation
+            v-if="alert.room"
+            :mutation="require('./../apollo/mutations/addalert.gql')"
+            :refetchQueries="[require('./../apollo/queries/alerts.gql')]"
+            v-slot="{loading, mutate}"
+            @done="alert.open = false"
+          >
+
+            <q-btn class="q-ma-sm" :disable="loading" label="Host" type="submit" color="primary" @click="mutate({variables: { room: alert.room.id, response: 'HOST' }})" />
+            <q-btn class="q-ma-sm" :disable="loading" label="Yes" type="submit" color="primary" @click="mutate({variables: { room: alert.room.id, response: 'YES' }})" />
+            <q-btn class="q-ma-sm text-grey" :disable="loading" label="No" type="submit" color="secondairy" @click="mutate({variables: { room: alert.room.id, response: 'NO' }})" />
+
+          </ApolloMutation>
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="roompopup">
+    <q-dialog v-model="room.open">
       <q-card>
+        
+        <ApolloMutation
+          :mutation="require('./../apollo/mutations/addroom.gql')"
+          :variables="{ name: room.name }"
+          :refetchQueries="[require('./../apollo/queries/rooms.gql')]"
+          @done="room.open = false"
+          v-slot="{mutate, error}"
+        >
+
         <q-card-section>
-          <div class="text-h6">Room</div>
+          <div class="text-h6">Room name</div>
+        </q-card-section>
+
+        <q-card-section v-if="error">
+          <div class="text-h6">{{ error }}</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          Add a room
+          <q-input dense v-model="room.name" autofocus @keyup.enter="mutate()" />
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="OK" color="primary" v-close-popup />
+          <q-btn flat label="Save" color="primary" @click="mutate()" />
         </q-card-actions>
+
+        </ApolloMutation>
+
       </q-card>
     </q-dialog>
 
@@ -57,22 +97,30 @@ export default defineComponent({
 
   methods: {
       openpopup(popup) {
+
+
           if(popup == 'alert') {
-              this.alertpopup = true
-              this.roompopup = false
+              this.alert.open = true
+              this.room.open = false
           }
 
           else if(popup == 'room') {
-              this.roompopup = true
-              this.alertpopup = false
+              this.room.open = true
+              this.alert.open = false
           }
       }
   },
 
   data() {
       return {
-          alertpopup: false,
-          roompopup: false
+        alert: {
+          open: false,
+          room: null
+        },
+        room: {
+          open: false,
+          name: ''
+        }
       }
   }
 })

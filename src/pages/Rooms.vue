@@ -4,14 +4,8 @@
     >
 
     <template v-slot="{ result: { loading, data } }">
-      
-        <q-item to="/rooms/add" clickable>
-          <q-item-section>
-            <q-item-label>Add</q-item-label>
-          </q-item-section>
-        </q-item>
 
-        <q-list bordered separator v-if="!loading">
+        <q-list separator v-if="!loading" class="q-ma-xl">
           
           <q-item clickable v-ripple v-for="r in data.rooms" v-bind:key="r.id" @click="$router.push({ path: `/rooms/${r.id}/details`})">
             <q-item-section>{{ r.name }}</q-item-section>

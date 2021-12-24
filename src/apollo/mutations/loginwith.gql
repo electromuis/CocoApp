@@ -1,0 +1,8 @@
+mutation LoginWith($network: NetworkType!, $token: String!) {
+    loginWith(
+        network: $network,
+        token: $token,
+    ) {
+        token
+    }
+}

@@ -37,16 +37,9 @@ export default defineComponent({
   methods: {
     tokenVar,
     loggedIn(d) {
-      tokenVar(d.data.register.token)
-      localStorage.setItem('token', d.data.register.token)
-      $router.replace('/alerts')
+      this.$auth.login(d.data.login.token)
+      this.$router.replace('/alerts')
     }
-  },
-
-
-  created() {
-    const { result } = useQuery(QUERY_TOKEN)
-    console.log(result.value.token)
   },
 
   data () {

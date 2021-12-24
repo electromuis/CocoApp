@@ -77,3 +77,4 @@ export const AlertResponse = {
 
 exports.Query = require('./queries.js')
 exports.Mutation = require('./mutations.js')
+exports.Subscription = require('./subscriptions.js')

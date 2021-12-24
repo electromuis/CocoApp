@@ -1,5 +1,5 @@
-import jsonwebtoken from 'jsonwebtoken'
-const secret = 'asdc0- m7qw789456378689aN&dw';
+import { GetUser, CreatToken } from './../auth'
+import { SubscriptionPublisher } from './../apollo'
 
 export const register = async (root, {name, email, password}, {models}) =>
 {
@@ -10,16 +10,20 @@ export const register = async (root, {name, email, password}, {models}) =>
 
   const user = await models.User.create({name, email, password});
 
-  const token = jsonwebtoken.sign(
-    { id: user.id, email: user.email},
-    secret,
-    { expiresIn: '1y' }
-  )
-
   return {
-    'token': token,
+    'token': CreatToken(user),
     'user': user
   };
+}
+
+export const loginWith = async(root, { network, token }) =>
+{
+  const user = await GetUser(network, token)
+
+  return {
+    'token': CreatToken(user),
+    'user': user
+  }
 }
 
 export const login = async (root, {email, password}, {models}) =>
@@ -28,11 +32,7 @@ export const login = async (root, {email, password}, {models}) =>
   if(!user)
     throw new MyError('Unknown user')
 
-  const token = jsonwebtoken.sign(
-    { id: user.id, email: user.email},
-    secret,
-    { expiresIn: '1y' }
-  )
+  const token = CreatToken(user)
 
   return {
     'token': token,
@@ -40,22 +40,11 @@ export const login = async (root, {email, password}, {models}) =>
   };
 }
 
-export const validateToken = async (root, {token}, {models}) =>
+export const validateToken = async (root, { token }) =>
 {
-  const decoded = jsonwebtoken.verify(
-    token,
-    secret
-  );
+  const user = await GetUser('local', token);
 
-  if(!decoded)
-    throw "Invalid token (1)";
-
-  const user = await models.User.findByPk(decoded.id);
-  if(!user)
-    throw "Invalid token (2)";
-
-  if(user.email !== decoded.email)
-    throw "Invalid token (3)";
+  console.log('User', user)
 
   return user;
 }
@@ -101,18 +90,38 @@ export const inviteResponse = async (_, { roomId, accepted }, { models, user }) 
   return invite
 }
 
-export const addAlert = async(_, { roomId }, { models, user }) =>
+export const addAlert = async(_, { roomId, response }, { models, user }) =>
 {
   if(!user)
     throw "Not authenticated"
 
-  if(!await models.Room.findByPk(roomId))
+  const room = await models.Room.findByPk(roomId)
+  if(!room)
     throw "Room not found"
 
-  return await models.Alert.create({
-    userId: user.id,
+  const alert = await models.Alert.create({
+    creatorId: user.id,
     roomId
   })
+
+  if(response) {
+    const responseRow = await models.Response.create({
+      userId: user.id,
+      alertId: alert.id,
+      response
+    })
+  }
+
+  let alertSimple = alert.get({ plain: true })
+  alertSimple.room = room.get({ plain: true })
+
+  console.log(alertSimple)
+
+  SubscriptionPublisher.publish('ALERT_SENT', {
+    alertSent: alertSimple
+  })
+
+  return alert
 }
 
 export const alertResponse = async(_, { alertId, response }, { models, user }) =>

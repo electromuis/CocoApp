@@ -42,6 +42,15 @@ type User {
     token: String!
     user: User!
   }
+  enum NetworkType {
+    google,
+    facebook
+  }
+
+  type Subscription {
+    alertSent: Alert!
+  }
+
   type Query {
     hello: String
     user(id: ID!): User
@@ -50,12 +59,17 @@ type User {
     invites(accepted: AcceptedType): [Invite]
     alerts(responded: Boolean): [Alert]
   }
-  
+
   type Mutation {
     register(
       name: String
       email: String
       password: String
+    ): AuthPayload!
+
+    loginWith(
+      token: String!
+      network: NetworkType!
     ): AuthPayload!
 
     login(
@@ -66,7 +80,7 @@ type User {
     validateToken(token: String!): User!
 
     addRoom(name: String!): Room!
-    addAlert(roomId: ID!): Alert!
+    addAlert(roomId: ID!, response: AlertResponseType): Alert!
     alertResponse(alertId: ID!, response: AlertResponseType!): AlertResponse!
 
     invite(userId: ID!, roomId: ID!): Invite!

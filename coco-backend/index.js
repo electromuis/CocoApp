@@ -1,71 +1,57 @@
-import { ApolloServer, gql } from 'apollo-server-express';
-import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
-
 import express from 'express';
 import http from 'http';
 
-const models = require('./models');
-import jsonwebtoken from 'jsonwebtoken'
-const secret = 'asdc0- m7qw789456378689aN&dw';
+import { ApolloServer, gql } from 'apollo-server-express';
+import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { apolloContext } from './apollo'
+import { execute, subscribe } from 'graphql';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+
+import * as resolvers from './resolvers/index.js'
+import * as typeDefs from './schema.gql'
+const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 async function startApolloServer(typeDefs, resolvers) {
   const app = express();
-  app.get('/hi', (req, res) => {
-    res.send('Hello Worldd!')
-  });
-
   const httpServer = http.createServer(app);
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-    async context({req})
-    {
-      let token = req.headers.authorization || req.query.token || '';
-      token = token.replace('Bearer ', '');
-      let user = null;
 
-      try {
-        const decoded = jsonwebtoken.verify(
-          token,
-          secret
-        );
-
-        if(decoded)
-        {
-          user = await models.User.findByPk(decoded.id);
-          if(!user || user.email !== decoded.email)
-          {
-            user = null;
-          }
-        }
-      }
-      catch
-      {
-        user = null
-      }
-
-      return { models, user }
-    }
+  const subscriptionServer = SubscriptionServer.create({
+      // This is the `schema` we just created.
+      schema,
+      // These are imported from `graphql`.
+      execute,
+      subscribe,
+      onOperation: (message, params, webSocket) => {
+        return { ...params, context: apolloContext }
+      },
+      onConnect(connectionParams, webSocket, context) {
+        console.log('Connected!')
+      },
+      onDisconnect(webSocket, context) {
+        console.log('Disconnected!')
+      },
+  }, {
+      // This is the `httpServer` we created in a previous step.
+      server: httpServer,
+      // Pass a different path here if your ApolloServer serves at
+      // a different path.
+      path: '/graphqlws',
   });
+
+  const server = new ApolloServer({
+    schema,
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer })
+    ],
+    context: apolloContext
+  });
+
   await server.start();
-  server.applyMiddleware
+
   server.applyMiddleware({ app, cors: {credentials: true, origin: true} });
   await new Promise(resolve => httpServer.listen({ port: 4000 }, resolve));
   console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
 }
-
-import * as typeDefs from './schema.gql'
-
-import { ApolloError } from 'apollo-server-errors';
-class MyError extends ApolloError {
-  constructor(message) {
-    super(message, 'MY_ERROR_CODE');
-
-    Object.defineProperty(this, 'name', { value: 'MyError' });
-  }
-}
-
-import * as resolvers from './resolvers/index.js'
 
 startApolloServer(typeDefs, resolvers);

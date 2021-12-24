@@ -1,0 +1,8 @@
+mutation AddAlert($room: ID!, $response: AlertResponseType) {
+    addAlert(
+        roomId: $room,
+        response: $response
+    ) {
+        id
+    }
+}

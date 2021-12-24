@@ -15,7 +15,9 @@
         <q-input filled class="q-ma-sm" v-model="password" type="password" label="Password" />
 
         <div class="q-ma-sm">
-          <q-btn class="q-pa-sm" label="Login" type="submit" color="primary" @click="mutate()" />
+          <q-btn class="q-ma-sm" label="Login" type="submit" color="primary" @click="mutate()" />
+
+          <q-btn class="q-ma-sm" label="Google Login" type="submit" color="primary" @click="auth('google')" />
         </div>
         
       </q-form>
@@ -27,25 +29,35 @@
 
 <script>
 import { defineComponent } from 'vue';
-import { useQuery, writeQuery } from '@vue/apollo-composable'
-import { QUERY_TOKEN, tokenVar } from './../apollo'
 
 export default defineComponent({
   name: 'PageLogin',
 
   methods: {
-    tokenVar,
+    async auth(network) {
+      const helloResult = await this.$hello(network).login({
+        scope: 'profile,email',
+        redirect_uri: 'http://127.0.0.1:8080/'
+      })
+
+      console.log(helloResult)
+
+      const tokenResult = await this.$apollo.mutate({
+        mutation: require('./../apollo/mutations/loginwith.gql'),
+        variables: {
+          network,
+          token: helloResult.authResponse.access_token
+        }
+      })
+
+      this.$auth.login(tokenResult.data.loginWith.token)
+      this.$router.replace('/alerts')
+    },
+
     loggedIn(d) {
-      tokenVar(d.data.login.token)
-      localStorage.setItem('token', d.data.login.token)
+      this.$auth.login(d.data.login.token)
       $router.replace('/alerts')
     }
-  },
-
-
-  created() {
-    const { result } = useQuery(QUERY_TOKEN)
-    console.log(result.value.token)
   },
 
   data () {
