@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "root",
-    "password": "password",
+    "username": "coco_user",
+    "password": "An0thrS3crt",
     "database": "coco",
-    "host": "127.0.0.1",
+    "host": "mysql",
     "dialect": "mysql"
   },
   "test": {

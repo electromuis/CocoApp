@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  mysql:
+    image: mysql:8
+    ports: [3306:3306]
+    environment:
+      - MYSQL_PASSWORD=An0thrS3crt
+      - MYSQL_USER=coco_user
+      - MYSQL_DATABASE=coco
+      - MYSQL_RANDOM_ROOT_PASSWORD=1
+    healthcheck:
+        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        timeout: 5s
+        retries: 10
+  node:
+    build: .
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    ports: [4000:4000]
+  
